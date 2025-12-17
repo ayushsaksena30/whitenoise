@@ -94,10 +94,7 @@ class GroupMessagesNotifier extends FamilyNotifier<GroupMessagesState, String> {
   }
 
   Future<Map<String, domain_user.User>> _fetchGroupUsersMap() async {
-    final activePubkey = ref.read(activePubkeyProvider);
-    if (activePubkey == null || activePubkey.isEmpty) {
-      return {};
-    }
+    final activePubkey = ref.read(activePubkeyProvider)!;
     final groupUserProfiles = await _fetchGroupUserProfiles(activePubkey);
     final domainUsersMap = _mapUserProfilesToDomainUsers(
       activePubkey: activePubkey,
