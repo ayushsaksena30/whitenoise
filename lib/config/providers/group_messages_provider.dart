@@ -70,9 +70,9 @@ class GroupMessagesNotifier extends FamilyNotifier<GroupMessagesState, String> {
     );
 
     chatMessages.sort((a, b) {
-      final timeComparsion = a.createdAt.compareTo(b.createdAt);
-      if (timeComparsion != 0) {
-        return timeComparsion;
+      final timeComparison = a.createdAt.compareTo(b.createdAt);
+      if (timeComparison != 0) {
+        return timeComparison;
       }
       return a.id.compareTo(b.id);
     });
