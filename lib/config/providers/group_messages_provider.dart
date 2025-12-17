@@ -69,7 +69,13 @@ class GroupMessagesNotifier extends FamilyNotifier<GroupMessagesState, String> {
       groupId: state.groupId,
     );
 
-    chatMessages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    chatMessages.sort((a, b) {
+      final timeComparsion = a.createdAt.compareTo(b.createdAt);
+      if (timeComparsion != 0) {
+        return timeComparsion;
+      }
+      return a.id.compareTo(b.id);
+    });
     return _toMessageModels(chatMessages: chatMessages, activePubkey: activePubkey);
   }
 

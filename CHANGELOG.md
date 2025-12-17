@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed message bubble width issue where bubbles could become too wide and cause layout problems [#856](https://github.com/parres-hq/whitenoise_flutter/issues/856)
 - Fixed timestamp alignment for received messages to align to the right side instead of left
 - Fixed issue where chats and profiles show up after app uninstall and reinstall on Android [#889](https://github.com/parres-hq/whitenoise_flutter/issues/889)
+- Fixed message reordering loop when multiple users send messages concurrently with the same timestamp [#644](https://github.com/marmot-protocol/whitenoise/issues/644)
 
 ### Security
 
