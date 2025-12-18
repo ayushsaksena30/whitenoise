@@ -73,8 +73,8 @@ class MessageWidget extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.only(
-          top: isSameSenderAsPrevious ? 4.w : 12.w,
-          bottom: message.reactions.isNotEmpty ? 12.w : 0,
+          top: isSameSenderAsPrevious ? 4.h : 12.h,
+          bottom: message.reactions.isNotEmpty ? 12.h : 0,
         ),
         color: Colors.transparent,
         width: double.infinity,
@@ -82,7 +82,6 @@ class MessageWidget extends StatelessWidget {
           mainAxisAlignment: message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Always reserve space for avatar in group messages to keep tails aligned
             if (isGroupMessage && !message.isMe) ...[
               if (!isSameSenderAsPrevious) ...[
                 WnAvatar(
@@ -94,8 +93,7 @@ class MessageWidget extends StatelessWidget {
                 ),
                 Gap(4.w),
               ] else ...[
-                // Add spacer to maintain consistent tail alignment
-                SizedBox(width: 32.w + 4.w), // Same width as avatar + gap
+                SizedBox(width: 32.w + 4.w),
               ],
             ],
             messageContentStack,
@@ -106,229 +104,245 @@ class MessageWidget extends StatelessWidget {
   }
 
   Widget _buildMessageContent(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: constraints.maxWidth,
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final maxBubbleWidth = screenWidth * 0.74;
+
+    double? mediaWidth;
+    if (message.mediaAttachments.isNotEmpty) {
+      final layoutConfig = MediaLayoutCalculator.calculateLayout(
+        message.mediaAttachments.length,
+      );
+      mediaWidth = layoutConfig.gridWidth.w;
+    }
+
+    final effectiveMaxWidth = mediaWidth != null ? (mediaWidth + 8.w) : maxBubbleWidth;
+
+    return IntrinsicWidth(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: effectiveMaxWidth,
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: message.isMe ? 0 : 8.w,
+            right: message.isMe ? 8.w : 0,
+            top: 2.h,
+            bottom: 2.h,
           ),
-          child: Container(
-            padding: EdgeInsets.only(
-              right: message.isMe ? 8.w : 0,
-              left: message.isMe ? 0 : 8.w,
-              bottom: message.reactions.isNotEmpty ? 8.h : 0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isGroupMessage && !isSameSenderAsPrevious && !message.isMe) ...[
-                  Text(
-                    message.sender.displayName,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: context.colors.mutedForeground,
+          child: Builder(
+            builder: (context) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isGroupMessage && !isSameSenderAsPrevious && !message.isMe) ...[
+                    Text(
+                      message.sender.displayName,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: context.colors.mutedForeground,
+                      ),
                     ),
-                  ),
-                  Gap(4.h),
+                    Gap(4.h),
+                  ],
+                  if (message.replyTo != null)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 4.h),
+                      child: MessageReplyBox(
+                        replyingTo: message.replyTo,
+                        onTap: () => onReplyTap?.call(message.replyTo!.id),
+                      ),
+                    ),
+                  if (message.mediaAttachments.isNotEmpty) ...[
+                    MessageMediaGrid(
+                      mediaFiles: message.mediaAttachments,
+                      onMediaTap: (index) => _handleMediaTap(context, index),
+                    ),
+                    if (message.content?.isNotEmpty ?? false) Gap(4.h),
+                  ],
+                  if (message.content?.isNotEmpty ?? false) ...[
+                    Builder(
+                      builder: (context) {
+                        double? mediaWidth;
+                        if (message.mediaAttachments.isNotEmpty) {
+                          final layoutConfig = MediaLayoutCalculator.calculateLayout(
+                            message.mediaAttachments.length,
+                          );
+                          mediaWidth = layoutConfig.gridWidth.w;
+                        }
+                        return _buildMessageWithTimestamp(context, mediaWidth: mediaWidth);
+                      },
+                    ),
+                  ] else if (message.mediaAttachments.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(top: 4.h),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: TimeAndStatus(message: message, context: context),
+                      ),
+                    ),
                 ],
-                MessageReplyBox(
-                  replyingTo: message.replyTo,
-                  onTap:
-                      message.replyTo != null ? () => onReplyTap?.call(message.replyTo!.id) : null,
-                ),
-                if (message.mediaAttachments.isNotEmpty) ...[
-                  MessageMediaGrid(
-                    mediaFiles: message.mediaAttachments,
-                    onMediaTap: (index) => _handleMediaTap(context, index),
-                  ),
-                  Gap(4.h),
-                ],
-                Builder(
-                  builder: (context) {
-                    double? mediaWidth;
-                    if (message.mediaAttachments.isNotEmpty) {
-                      final layoutConfig = MediaLayoutCalculator.calculateLayout(
-                        message.mediaAttachments.length,
-                      );
-                      mediaWidth = layoutConfig.gridWidth.w;
-                    }
-                    return _buildMessageWithTimestamp(
-                      context,
-                      constraints.maxWidth - 16.w,
-                      hasMedia: message.mediaAttachments.isNotEmpty,
-                      mediaWidth: mediaWidth,
-                    );
-                  },
-                ),
-              ],
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildMessageWithTimestamp(
-    BuildContext context,
-    double maxWidth, {
-    bool hasMedia = false,
-    double? mediaWidth,
-  }) {
+  Widget _buildMessageWithTimestamp(BuildContext context, {double? mediaWidth}) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final maxBubbleWidth = screenWidth * 0.74;
+    final maxWidth = mediaWidth ?? (maxBubbleWidth - 16.w);
+    final messageContent = message.content ?? '';
+    final timestampWidth = _getTimestampWidth(context);
+    final minSpacing = 6.w;
+
     final textStyle = TextStyle(
       fontSize: 16.sp,
+      height: 20.sp / 16.sp,
       fontWeight: FontWeight.w500,
       color: message.isMe ? context.colors.meChatBubbleText : context.colors.otherChatBubbleText,
     );
 
-    final messageContent = message.content ?? '';
-    final timestampWidth = _getTimestampWidth(context);
-    final minPadding = 8.w;
+    final textPainter = TextPainter(
+      text: TextSpan(text: messageContent, style: textStyle),
+      textDirection: TextDirection.ltr,
+    );
 
-    // If message content is empty, just show the timestamp
-    if (messageContent.isEmpty) {
-      // If media exists, timestamp should align to media width on the right
-      if (hasMedia && mediaWidth != null) {
-        return SizedBox(
-          width: mediaWidth,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TimeAndStatus(message: message, context: context),
-            ],
-          ),
-        );
-      }
-      // No media, normal timestamp display
+    textPainter.layout(maxWidth: maxWidth);
+
+    final lines = textPainter.computeLineMetrics();
+    if (lines.isEmpty) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           TimeAndStatus(message: message, context: context),
         ],
       );
     }
 
+    final isSingleLine = lines.length == 1;
+    final lastLineWidth = lines.last.width;
+    final requiredSpace = timestampWidth + minSpacing;
+    final availableSpace = maxWidth - lastLineWidth;
+    final canFitInline =
+        isSingleLine &&
+        availableSpace >= requiredSpace &&
+        lastLineWidth + requiredSpace <= maxWidth;
+    final hasReply = message.replyTo != null;
+    final hasMedia = mediaWidth != null;
+
     final textWidget = _buildHighlightedText(messageContent, textStyle, context);
 
-    // Calculate text metrics to determine the best layout
-    final textPainter = TextPainter(
-      text: TextSpan(text: messageContent, style: textStyle),
-      textDirection: Directionality.of(context),
-    );
-
-    textPainter.layout(maxWidth: maxWidth);
-    final lines = textPainter.computeLineMetrics();
-
-    if (lines.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Find the longest line width
-    final longestLineWidth = lines.map((line) => line.width).reduce((a, b) => a > b ? a : b);
-
-    // Check if timestamp can fit inline with the last line
-    final lastLineWidth = lines.last.width;
-    final availableWidth = maxWidth - lastLineWidth;
-    final canFitInline = lines.length == 1 && availableWidth >= (timestampWidth + minPadding);
-
     if (canFitInline) {
-      // Single line with inline timestamp
-      if (hasMedia && mediaWidth != null) {
-        // If media exists, message should start from left, timestamp should align to media width on the right
-        return SizedBox(
-          width: mediaWidth,
+      if (hasReply || hasMedia) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+          ),
           child: Row(
             children: [
               Expanded(
                 child: textWidget,
               ),
-              SizedBox(width: minPadding),
-              TimeAndStatus(message: message, context: context),
+              Gap(minSpacing),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Transform.translate(
+                  offset: const Offset(0, 2),
+                  child: TimeAndStatus(message: message, context: context),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: maxWidth,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: textWidget,
+              ),
+              Gap(minSpacing),
+              Transform.translate(
+                offset: const Offset(0, 2),
+                child: TimeAndStatus(message: message, context: context),
+              ),
             ],
           ),
         );
       }
-      // No media, use IntrinsicWidth for normal hugging behavior
-      return IntrinsicWidth(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: textWidget,
-            ),
-            SizedBox(width: minPadding),
-            TimeAndStatus(message: message, context: context),
-          ],
-        ),
-      );
     } else {
-      // Multi-line or timestamp doesn't fit inline
-      // For multi-line, bubble width should only match the text content width
-      // Timestamp is on a separate line, so it doesn't affect bubble width
-      final bubbleWidth = longestLineWidth > maxWidth ? maxWidth : longestLineWidth;
+      final textMaxWidth = lines.map((line) => line.width).reduce((a, b) => a > b ? a : b);
+      final minWidth = textMaxWidth > timestampWidth ? textMaxWidth : timestampWidth;
+      final isTimestampWider = timestampWidth > textMaxWidth;
+      final double targetWidth = hasMedia ? mediaWidth : maxWidth;
+      final double minConstraintWidth = hasMedia ? mediaWidth : minWidth;
 
-      // If media exists, timestamp should always align to the right edge of maxWidth
-      // Otherwise, use the maximum of bubble width and timestamp width
-      final columnWidth =
-          hasMedia ? maxWidth : (bubbleWidth > timestampWidth ? bubbleWidth : timestampWidth);
-
-      // For timestamp row width: if media exists, use maxWidth to align to right edge
-      // Otherwise, use bubbleWidth or timestampWidth based on which is larger
-      final timestampRowWidth =
-          hasMedia ? maxWidth : (bubbleWidth >= timestampWidth ? bubbleWidth : timestampWidth);
-
-      return SizedBox(
-        width: columnWidth,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+      return ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: minConstraintWidth,
+          maxWidth: targetWidth,
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            SizedBox(
-              width: bubbleWidth,
+            Padding(
+              padding: EdgeInsets.only(bottom: 16.h),
               child: textWidget,
             ),
-            SizedBox(height: 4.h),
-            // Timestamp on its own line, always aligned to the right edge
-            // If media exists, always align to maxWidth
-            // If text is shorter than timestamp, timestamp takes only its own width
-            // If text is longer, timestamp aligns to text width
-            if (hasMedia || bubbleWidth >= timestampWidth)
-              // Media exists or text is wider, timestamp aligns to timestampRowWidth
-              SizedBox(
-                width: timestampRowWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TimeAndStatus(message: message, context: context),
-                  ],
-                ),
-              )
-            else
-              // Timestamp is wider, it takes only its own width
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TimeAndStatus(message: message, context: context),
-                ],
-              ),
+            Positioned(
+              left: isTimestampWider ? 0 : null,
+              right: isTimestampWider ? null : 0,
+              bottom: 0,
+              child: TimeAndStatus(message: message, context: context),
+            ),
           ],
         ),
       );
     }
   }
 
+  double _getTimestampWidth(BuildContext context) {
+    final timestampText = message.timeSent;
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: timestampText,
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout();
+
+    if (message.isMe) {
+      final iconWidth = 14.w;
+      final spacing = 2.w;
+      return textPainter.width + spacing + iconWidth;
+    }
+
+    return textPainter.width;
+  }
+
   Widget _buildHighlightedText(String text, TextStyle baseStyle, BuildContext context) {
-    // No search is active, show normal text.
     if (!isSearchActive) {
       return Text(
         text,
         style: baseStyle,
       );
     }
-    // Search is active, but this message has no matches. Dim the whole text.
+
     if (searchMatch == null || searchMatch!.textMatches.isEmpty) {
       return Text(
         text,
@@ -337,7 +351,7 @@ class MessageWidget extends StatelessWidget {
         ),
       );
     }
-    // Search is active and this message has matches. Highlight them.
+
     final spans = <TextSpan>[];
     int currentIndex = 0;
 
@@ -380,25 +394,6 @@ class MessageWidget extends StatelessWidget {
     return RichText(
       text: TextSpan(children: spans),
     );
-  }
-
-  double _getTimestampWidth(BuildContext context) {
-    final timestampText = message.isMe ? '${message.timeSent} ' : message.timeSent;
-
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: timestampText,
-        style: TextStyle(
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      textDirection: Directionality.of(context),
-    );
-
-    textPainter.layout();
-    final statusIconWidth = message.isMe ? (8.w + 14.w) : 0;
-    return textPainter.width + statusIconWidth;
   }
 
   void _handleMediaTap(BuildContext context, int index) {
@@ -560,13 +555,13 @@ class TimeAndStatus extends StatelessWidget {
         Text(
           message.timeSent,
           style: TextStyle(
-            fontSize: 13.sp,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
             color: context.colors.mutedForeground,
           ),
         ),
         if (message.isMe) ...[
-          Gap(8.w),
+          Gap(2.w),
           WnImage(
             message.status.imagePath,
             size: 14.w,

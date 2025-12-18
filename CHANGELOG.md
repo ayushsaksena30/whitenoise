@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Standardized chat bubble (message widget) layout and dimensions according to design documentation [#883](https://github.com/marmot-protocol/whitenoise/issues/883)
+
 ### Deprecated
 
 ### Removed
@@ -53,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed messages disappearing for a while after being sent [#828](https://github.com/parres-hq/whitenoise_flutter/pull/828)
 - Fixed issue where the group chat details (during group creation flow) wasn't scrollable [#724](https://github.com/parres-hq/whitenoise_flutter/issues/724)
 - Fixed notifications navigation for inactive accounts [#863](https://github.com/parres-hq/whitenoise_flutter/pull/863)
-- Fixed an issue where the language dropdown showed the currently selected language instead of the actual system language, causing the first item to display “Deutsch” instead of “System (English)” [#817](https://github.com/marmot-protocol/whitenoise/issues/817).
+- Fixed an issue where the language dropdown showed the currently selected language instead of the actual system language, causing the first item to display "Deutsch" instead of "System (English)" [#817](https://github.com/marmot-protocol/whitenoise/issues/817)
 
 ### Security
 
