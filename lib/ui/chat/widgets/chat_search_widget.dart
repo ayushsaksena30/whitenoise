@@ -129,25 +129,29 @@ class _ChatSearchWidgetState extends ConsumerState<ChatSearchWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Previous Match Button (hidden when there is only one match)
-                  if (hasMultipleMatches)
-                    IconButton(
-                      onPressed: isPrevEnabled ? () => searchNotifier.goToPreviousMatch() : null,
-                      icon: Opacity(
-                        opacity: isPrevEnabled ? 1.0 : 0.25,
-                        child: WnImage(
-                          AssetsPaths.icChevronUp,
-                          height: 16.w,
-                          width: 16.w,
-                          color: context.colors.solidPrimary,
+                  // Previous Match Button
+                  hasMultipleMatches
+                      ? IconButton(
+                        onPressed: isPrevEnabled ? () => searchNotifier.goToPreviousMatch() : null,
+                        icon: Opacity(
+                          opacity: isPrevEnabled ? 1.0 : 0.25,
+                          child: WnImage(
+                            AssetsPaths.icChevronUp,
+                            height: 16.w,
+                            width: 16.w,
+                            color: context.colors.solidPrimary,
+                          ),
                         ),
+                        padding: EdgeInsets.all(4.w), // Reduce button padding
+                        constraints: BoxConstraints(
+                          minWidth: 32.w,
+                          minHeight: 32.w,
+                        ), // Smaller button size
+                      )
+                      : SizedBox(
+                        width: 32.w,
+                        height: 32.w,
                       ),
-                      padding: EdgeInsets.all(4.w), // Reduce button padding
-                      constraints: BoxConstraints(
-                        minWidth: 32.w,
-                        minHeight: 32.w,
-                      ), // Smaller button size
-                    ),
 
                   // Counter Text - White text on black background
                   Padding(
@@ -165,25 +169,29 @@ class _ChatSearchWidgetState extends ConsumerState<ChatSearchWidget> {
                     ),
                   ),
 
-                  // Next Match Button (hidden when there is only one match)
-                  if (hasMultipleMatches)
-                    IconButton(
-                      onPressed: isNextEnabled ? () => searchNotifier.goToNextMatch() : null,
-                      icon: Opacity(
-                        opacity: isNextEnabled ? 1.0 : 0.25,
-                        child: WnImage(
-                          AssetsPaths.icChevronDown,
-                          height: 16.w,
-                          width: 16.w,
-                          color: context.colors.solidPrimary,
+                  // Next Match Button
+                  hasMultipleMatches
+                      ? IconButton(
+                        onPressed: isNextEnabled ? () => searchNotifier.goToNextMatch() : null,
+                        icon: Opacity(
+                          opacity: isNextEnabled ? 1.0 : 0.25,
+                          child: WnImage(
+                            AssetsPaths.icChevronDown,
+                            height: 16.w,
+                            width: 16.w,
+                            color: context.colors.solidPrimary,
+                          ),
                         ),
+                        padding: EdgeInsets.all(4.w), // Reduce button padding
+                        constraints: BoxConstraints(
+                          minWidth: 32.w,
+                          minHeight: 32.w,
+                        ), // Smaller button size
+                      )
+                      : SizedBox(
+                        width: 32.w,
+                        height: 32.w,
                       ),
-                      padding: EdgeInsets.all(4.w), // Reduce button padding
-                      constraints: BoxConstraints(
-                        minWidth: 32.w,
-                        minHeight: 32.w,
-                      ), // Smaller button size
-                    ),
                 ],
               ),
             ),
