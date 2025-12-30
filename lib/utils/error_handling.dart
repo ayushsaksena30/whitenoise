@@ -485,7 +485,7 @@ class ErrorHandlingUtils {
   static String _getAccountLookupHelpText() {
     return _tr(
       'errors.accountLookupHelp',
-      'We could not find an account for your active key. '
+      'We could not find a profile for your active key. '
           'Please log out and back in or create a new identity, then try again.',
     );
   }
@@ -493,7 +493,7 @@ class ErrorHandlingUtils {
   static String _getRelayConfigurationHelpText() {
     return _tr(
       'errors.relayConfigurationHelp',
-      'Your account does not have any valid Nostr relays configured (NIP-65). '
+      'Your profile does not have any valid Nostr relays configured (NIP-65). '
           'Please add at least one relay in Settings and try again.',
     );
   }
