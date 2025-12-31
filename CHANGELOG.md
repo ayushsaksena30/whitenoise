@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added retry option for failed media uploads [#789](https://github.com/marmot-protocol/whitenoise/issues/789)
+- Added warning message to profile edit screen [#831](https://github.com/marmot-protocol/whitenoise/issues/831)
+
 ### Changed
+
+- Standardized chat bubble (message widget) layout and dimensions according to design documentation [#883](https://github.com/marmot-protocol/whitenoise/issues/883)
 
 ### Deprecated
 
@@ -21,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed timestamp alignment for received messages to align to the right side instead of left
 - Fixed issue where chats and profiles show up after app uninstall and reinstall on Android [#889](https://github.com/parres-hq/whitenoise_flutter/issues/889)
 - Fixed terminology inconsistency by replacing "Account" with "Profile" in all user-facing text. [#825](https://github.com/marmot-protocol/whitenoise/issues/825)
+- Fixed message reordering loop when multiple users send messages concurrently with the same timestamp [#644](https://github.com/marmot-protocol/whitenoise/issues/644)
+- Fixed issue where user details on media preview modal overlaps the image or image is not properly vertically centered [#880](https://github.com/marmot-protocol/whitenoise/issues/880)
+- Fixed notifications not coming in after device restart unless app is opened at least once [#885](https://github.com/marmot-protocol/whitenoise/issues/885)
 
 ### Security
 
@@ -51,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed messages disappearing for a while after being sent [#828](https://github.com/parres-hq/whitenoise_flutter/pull/828)
 - Fixed issue where the group chat details (during group creation flow) wasn't scrollable [#724](https://github.com/parres-hq/whitenoise_flutter/issues/724)
 - Fixed notifications navigation for inactive accounts [#863](https://github.com/parres-hq/whitenoise_flutter/pull/863)
-- Fixed an issue where the language dropdown showed the currently selected language instead of the actual system language, causing the first item to display “Deutsch” instead of “System (English)” [#817](https://github.com/marmot-protocol/whitenoise/issues/817).
+- Fixed an issue where the language dropdown showed the currently selected language instead of the actual system language, causing the first item to display "Deutsch" instead of "System (English)" [#817](https://github.com/marmot-protocol/whitenoise/issues/817)
 
 ### Security
 
